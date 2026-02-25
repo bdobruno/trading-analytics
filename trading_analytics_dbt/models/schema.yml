@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: trades_view
+    description: "Summary view of trades with entry/exit prices"
+    columns:
+      - name: trade_id
+        description: "Unique identifier for each trade"
+        data_tests:
+          - unique
+          - not_null
+      - name: symbol
+        description: "Trading symbol"
+      - name: direction
+        description: "Trade direction: bullish (buy to open) or bearish (sell to open)"
+
+sources:
+  - name: stocksdb
+    database: stocksdb
+    schema: main
+    tables:
+      - name: trades
+      - name: stop_orders
+      - name: account_snapshots
+      - name: executions
+      - name: tickers
+      - name: watchlist_events
