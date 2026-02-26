@@ -19,9 +19,6 @@ sources:
     database: stocksdb
     schema: main
     tables:
-      - name: trades
       - name: stop_orders
       - name: account_snapshots
       - name: executions
-      - name: tickers
-      - name: watchlist_events

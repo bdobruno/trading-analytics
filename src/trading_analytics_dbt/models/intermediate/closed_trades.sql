@@ -18,8 +18,8 @@ select
     te.stop_price,
     te.exit_price,
     te.date_closed,
-    te.account_id,
+    te.account_number,
     asn.equity
 from trade_executions te
-left join account_snapshots asn on asn.account_id = te.account_id and asn.date = date(te.date_opened)
+left join account_snapshots asn on asn.account_number = te.account_number and asn.date = date(te.date_opened)
 where exit_qty = entry_qty

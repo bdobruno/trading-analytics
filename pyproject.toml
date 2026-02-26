@@ -5,11 +5,13 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "alpaca-py>=0.43.2",
     "dbt-core>=1.11.6",
     "dbt-duckdb>=1.10.1",
     "dotenv>=0.9.9",
     "duckdb>=1.4.4",
     "polars>=1.38.1",
+    "pyarrow>=23.0.1",
 ]
 
 [build-system]
@@ -24,6 +26,7 @@ package = true
 
 [project.scripts]
 setup_db = "src.db.setup:setup_database"
+writer = "src.processes.poller:run"
 
 [dependency-groups]
 dev = [

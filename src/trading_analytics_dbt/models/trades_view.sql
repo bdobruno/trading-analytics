@@ -16,7 +16,7 @@ base_metrics as (
         exit_price,
         date_closed,
         equity,
-        qty * entry_price as capital_required,
+        qty * entry_price * case when length(symbol) > 8 then 100 else 1 end as capital_required,
         datediff('day', date_opened, date_closed) as duration_days,
         round(abs(entry_price - stop_price) * qty,2) as risk_size,
         round(

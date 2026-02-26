@@ -14,7 +14,7 @@ select
         when side = 'buy' then 'bullish'
         else 'bearish'
     end as side,
-    account_id
+    account_number
 from executions
 where position_intent like '%_to_open'
-group by trade_id, symbol, side, account_id
+group by trade_id, symbol, side, account_number
