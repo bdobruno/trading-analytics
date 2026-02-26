@@ -3,7 +3,8 @@ repos:
     hooks:
       - id: vulture
         name: vulture
-        entry: vulture
+        entry: .venv/bin/vulture
         language: system
         types: [python]
-        args: [--min-confidence, "80"]
+        pass_filenames: false
+        args: [--min-confidence, "80", "src/", "vulture_whitelist.py"]

@@ -16,7 +16,7 @@ class DuckDBConnector:
         self.conn.begin()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, _exc_val, _exc_tb):
         if exc_type is not None:
             self.conn.rollback()
         else:
@@ -129,38 +129,3 @@ class DuckDBConnector:
             ON CONFLICT (account_id, date) DO NOTHING
             """
         )
-
-    def add_unique_tickers(self, df: pl.DataFrame) -> None:
-        self.conn.execute("""
-            INSERT INTO tickers (ticker)
-            SELECT ticker from df
-            ON CONFLICT (ticker) DO NOTHING
-        """)
-
-    def add_to_watchlist(self, df: pl.DataFrame, type: str) -> None:
-        self.conn.execute(f"""
-            INSERT INTO watchlist_events (ticker_id, wl_type, event_type)
-            SELECT
-                t.id,
-                '{type}',
-                df.event_type
-            FROM df
-            JOIN tickers t ON df.ticker = t.ticker
-        """)
-
-    def add_tickers(self, df: pl.DataFrame, type: str) -> None:
-        """
-        Add tickers to the database.
-
-        Args:
-            df: Polars DataFrame with 'ticker' and 'event_type' columns
-
-        """
-        # Register the DataFrame
-        self.conn.register("df", df)
-
-        # Step 1: Insert tickers with sequence-generated IDs
-        self.add_unique_tickers(df)
-
-        # Step 2: Insert into watchlist_events with sequence-generated IDs
-        self.add_to_watchlist(df, type)
