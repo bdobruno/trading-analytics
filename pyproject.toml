@@ -10,6 +10,19 @@ dependencies = [
     "polars>=1.38.1",
 ]
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.uv]
+package = true
+
+[project.scripts]
+setup_db = "src.db.setup:setup_database"
+
 [dependency-groups]
 dev = [
     "pre-commit>=4.5.1",

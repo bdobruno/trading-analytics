@@ -14,11 +14,7 @@ def setup_database():
     if not motherduck_token:
         raise ValueError("MOTHERDUCK_TOKEN environment variable not set")
 
-    conn = duckdb.connect("md:")
-
-    db_name = "stocksdb"
-    conn.execute(f"CREATE DATABASE IF NOT EXISTS {db_name};")
-    conn = duckdb.connect(f"md:{db_name}")
+    conn = duckdb.connect("md:stocksdb")
 
     try:
         print("Dropping tables in dependency order...")
