@@ -82,8 +82,7 @@ def poll_account(db: DuckDBConnector, client: TradingClient, account_type: str) 
     stops_with_tid = assign_trade_ids_to_stops(stop_orders, executions_with_tid)
 
     if not executions_with_tid.is_empty():
-        before = db.get_executions_count()
-        db.log_executions(
+        new_count = db.log_executions(
             executions_with_tid.select(
                 [
                     pl.col("id").cast(pl.String).alias("execution_id"),
@@ -101,12 +100,10 @@ def poll_account(db: DuckDBConnector, client: TradingClient, account_type: str) 
                 ]
             )
         )
-        after = db.get_executions_count()
-        print(f"Executions: {after - before} new / {len(executions_with_tid)} total")
+        print(f"Executions: {new_count} new / {len(executions_with_tid)} total")
 
     if not stops_with_tid.is_empty():
-        before = db.get_stop_orders_count()
-        db.log_stop_orders(
+        new_count = db.log_stop_orders(
             stops_with_tid.select(
                 [
                     pl.col("id").cast(pl.String),
@@ -121,8 +118,7 @@ def poll_account(db: DuckDBConnector, client: TradingClient, account_type: str) 
                 ]
             )
         )
-        after = db.get_stop_orders_count()
-        print(f"Stop orders: {after - before} new / {len(stops_with_tid)} total")
+        print(f"Stop orders: {new_count} new / {len(stops_with_tid)} total")
 
 
 def run() -> None:

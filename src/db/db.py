@@ -55,8 +55,8 @@ class DuckDBConnector:
             """
         )
 
-    def log_executions(self, df: pl.DataFrame) -> None:
-        self.conn.execute(
+    def log_executions(self, df: pl.DataFrame) -> int:
+        result = self.conn.execute(
             """INSERT INTO executions (
                 execution_id,
                 order_id,
@@ -75,18 +75,13 @@ class DuckDBConnector:
             ON CONFLICT (execution_id) DO NOTHING
             """
         )
-
-    def get_executions_count(self) -> int:
-        return self.conn.execute("SELECT COUNT(*) FROM executions").fetchone()[0]
-
-    def get_stop_orders_count(self) -> int:
-        return self.conn.execute("SELECT COUNT(*) FROM stop_orders").fetchone()[0]
+        return result.rowcount
 
     def get_executions(self) -> pl.DataFrame:
         return self.conn.execute("SELECT * FROM executions").pl()
 
-    def log_stop_orders(self, df: pl.DataFrame) -> None:
-        self.conn.execute(
+    def log_stop_orders(self, df: pl.DataFrame) -> int:
+        result = self.conn.execute(
             """INSERT INTO stop_orders (
                 id,
                 created_at,
@@ -102,6 +97,7 @@ class DuckDBConnector:
             ON CONFLICT (id) DO NOTHING
             """
         )
+        return result.rowcount
 
     def get_stop_orders(self) -> pl.DataFrame:
         return self.conn.execute("SELECT * FROM stop_orders").pl()
