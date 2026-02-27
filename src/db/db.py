@@ -60,6 +60,7 @@ class DuckDBConnector:
             """INSERT INTO executions (
                 execution_id,
                 order_id,
+                parent_order_id,
                 created_at,
                 filled_at,
                 filled_avg_price,

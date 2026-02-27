@@ -39,6 +39,7 @@ def setup_database():
             CREATE TABLE IF NOT EXISTS executions (
                 execution_id VARCHAR PRIMARY KEY,
                 order_id VARCHAR NOT NULL,
+                parent_order_id VARCHAR,
                 created_at TIMESTAMPTZ NOT NULL,
                 filled_at TIMESTAMPTZ NOT NULL,
                 filled_avg_price DOUBLE,

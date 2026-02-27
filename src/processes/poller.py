@@ -48,21 +48,39 @@ def fetch_all_orders(client: TradingClient) -> list[Order]:
     return [o for o in raw if isinstance(o, Order)]  # type: ignore[union-attr]
 
 
+def _flatten_orders(orders: list[Order]) -> list[tuple[Order, str | None]]:
+    """Return (order, parent_id) tuples, unpacking legs from multi-leg orders."""
+    flat: list[tuple[Order, str | None]] = []
+    for o in orders:
+        flat.append((o, None))
+        if o.legs:
+            parent_id = str(o.id)
+            for leg in o.legs:
+                flat.append((leg, parent_id))
+    return flat
+
+
 def get_executions(orders: list[Order], from_date: str) -> list[dict]:
-    return [
-        o.model_dump(mode="json")
-        for o in orders
-        if o.status == OrderStatus.FILLED
-        and o.created_at is not None
-        and o.created_at.date().isoformat() >= from_date
-    ]
+    result = []
+    for o, parent_id in _flatten_orders(orders):
+        if (
+            o.status == OrderStatus.FILLED
+            and o.symbol is not None
+            and o.created_at is not None
+            and o.created_at.date().isoformat() >= from_date
+        ):
+            d = o.model_dump(mode="json")
+            d["parent_order_id"] = parent_id
+            result.append(d)
+    return result
 
 
 def get_stop_orders(orders: list[Order], from_date: str) -> list[dict]:
     return [
         o.model_dump(mode="json")
-        for o in orders
+        for o, _ in _flatten_orders(orders)
         if o.order_type == OrderType.STOP
+        and o.symbol is not None
         and o.created_at is not None
         and o.created_at.date().isoformat() >= from_date
     ]
@@ -87,6 +105,7 @@ def poll_account(db: DuckDBConnector, client: TradingClient, account_type: str) 
                 [
                     pl.col("id").cast(pl.String).alias("execution_id"),
                     pl.col("client_order_id").alias("order_id"),
+                    pl.col("parent_order_id"),
                     pl.col("created_at"),
                     pl.col("filled_at"),
                     pl.col("filled_avg_price"),
