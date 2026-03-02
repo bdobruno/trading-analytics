@@ -28,17 +28,28 @@ def assign_trade_ids_to_executions(executions: list[dict]) -> pl.DataFrame:
 
         # if this leg belongs to a multi-leg order already seen, reuse its trade_id
         if parent_id and parent_id in parent_trade_id:
-            row["trade_id"] = parent_trade_id[parent_id]
+            tid = parent_trade_id[parent_id]
+            row["trade_id"] = tid
+            # keep scoreboard updated so standalone closes on this symbol can match later
+            if intent in ENTRY_INTENTS:
+                if symbol not in scoreboard or scoreboard[symbol]["open_qty"] == 0:
+                    scoreboard[symbol] = {"trade_id": tid, "open_qty": 0, "parent_order_id": parent_id}
+                scoreboard[symbol]["open_qty"] += qty
+            elif symbol in scoreboard:
+                scoreboard[symbol]["open_qty"] = max(0, scoreboard[symbol]["open_qty"] - qty)
             continue
 
         if intent in ENTRY_INTENTS:
             if symbol not in scoreboard or scoreboard[symbol]["open_qty"] == 0:
-                scoreboard[symbol] = {"trade_id": trade_id_counter, "open_qty": 0}
+                scoreboard[symbol] = {"trade_id": trade_id_counter, "open_qty": 0, "parent_order_id": parent_id}
                 trade_id_counter += 1
             scoreboard[symbol]["open_qty"] += qty
         else:
             if symbol in scoreboard:
                 scoreboard[symbol]["open_qty"] = max(0, scoreboard[symbol]["open_qty"] - qty)
+                # propagate parent_order_id from the open to this close
+                if not row.get("parent_order_id"):
+                    row["parent_order_id"] = scoreboard[symbol].get("parent_order_id")
 
         trade_id = scoreboard.get(symbol, {}).get("trade_id")
         row["trade_id"] = trade_id

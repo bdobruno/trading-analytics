@@ -6,6 +6,7 @@ with executions as (
 
 select
     trade_id,
+    parent_order_id,
     max(filled_at) as filled_at,
     sum(filled_avg_price * filled_qty) / sum(filled_qty) as filled_avg_price,
     sum(filled_qty) as filled_qty,
@@ -13,4 +14,4 @@ select
     account_number
 from executions
 where position_intent like '%_to_close'
-group by trade_id, symbol, side, account_number
+group by trade_id, parent_order_id, symbol, side, account_number

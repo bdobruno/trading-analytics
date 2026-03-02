@@ -18,7 +18,7 @@ base_metrics as (
         equity,
         qty * entry_price * case when length(symbol) > 8 then 100 else 1 end as capital_required,
         datediff('day', date_opened, date_closed) as duration_days,
-        round(abs(entry_price - stop_price) * qty,2) as risk_size,
+        round(abs(entry_price - stop_price) * qty * case when length(symbol) > 8 then 100 else 1 end, 2) as risk_size,
         round(
             case
                 when side = 'bullish' then ((exit_price - entry_price) / (entry_price - stop_price))
@@ -31,11 +31,17 @@ calculated_metrics as (
     select
         *,
         risk_size / equity as risk_per_trade,
-        (risk_size / equity) * risk_reward as return_pct
+        coalesce(
+            (risk_size / equity) * risk_reward,
+            case
+                when side = 'bullish' then (exit_price - entry_price) * qty * case when length(symbol) > 8 then 100 else 1 end
+                when side = 'bearish' then (entry_price - exit_price) * qty * case when length(symbol) > 8 then 100 else 1 end
+            end / equity
+        ) as return_pct
     from base_metrics
 )
 
 select
-    *,
+    * replace(coalesce(risk_reward, return_pct) as risk_reward),
     return_pct / case when duration_days = 0 then 1 else duration_days end as return_per_day_pct
 from calculated_metrics
