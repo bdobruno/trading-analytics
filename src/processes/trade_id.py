@@ -47,7 +47,18 @@ def assign_trade_ids_to_executions(executions: list[dict]) -> pl.DataFrame:
         if parent_id and trade_id:
             parent_trade_id[parent_id] = trade_id
 
-    df = pl.DataFrame(rows)
+    skipped = [r for r in rows if not r.get("trade_id")]
+    for r in skipped:
+        print(
+            f"  [trade_id] skipped execution: id={r.get('id')} symbol={r.get('symbol')}"
+            f" intent={r.get('position_intent')} filled_at={r.get('filled_at')}"
+            f" qty={r.get('filled_qty')} (no matching open trade in window)"
+        )
+
+    valid_rows = [r for r in rows if r.get("trade_id")]
+    if not valid_rows:
+        return pl.DataFrame()
+    df = pl.DataFrame(valid_rows)
     return df.with_columns(pl.col("filled_qty").cast(pl.Float64))
 
 
@@ -87,6 +98,10 @@ def assign_trade_ids_to_stops(
         bucket = queue.get(symbol, [])
 
         if not bucket:
+            print(
+                f"  [trade_id] skipped stop: id={row.get('id')} symbol={symbol}"
+                f" qty={qty} created_at={row.get('created_at')} (no matching open trade)"
+            )
             continue
 
         row["trade_id"] = bucket[0]["trade_id"]
