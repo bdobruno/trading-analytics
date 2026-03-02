@@ -52,7 +52,7 @@ def assign_trade_ids_to_executions(executions: list[dict]) -> pl.DataFrame:
         print(
             f"  [trade_id] skipped execution: id={r.get('id')} symbol={r.get('symbol')}"
             f" intent={r.get('position_intent')} filled_at={r.get('filled_at')}"
-            f" qty={r.get('filled_qty')} (no matching open trade in window)"
+            f" qty={r.get('filled_qty')} parent_order_id={r.get('parent_order_id')} (no matching open trade in window)"
         )
 
     valid_rows = [r for r in rows if r.get("trade_id")]

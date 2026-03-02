@@ -76,7 +76,7 @@ class DuckDBConnector:
             ON CONFLICT (execution_id) DO NOTHING
             """
         )
-        return result.rowcount
+        return max(0, result.rowcount)
 
     def get_executions(self) -> pl.DataFrame:
         return self.conn.execute("SELECT * FROM executions").pl()
@@ -98,7 +98,7 @@ class DuckDBConnector:
             ON CONFLICT (id) DO NOTHING
             """
         )
-        return result.rowcount
+        return max(0, result.rowcount)
 
     def get_stop_orders(self) -> pl.DataFrame:
         return self.conn.execute("SELECT * FROM stop_orders").pl()
