@@ -42,6 +42,6 @@ calculated_metrics as (
 )
 
 select
-    * replace(coalesce(risk_reward, return_pct) as risk_reward),
+    * replace(coalesce(risk_reward, return_pct * 100) as risk_reward),
     return_pct / case when duration_days = 0 then 1 else duration_days end as return_per_day_pct
 from calculated_metrics
